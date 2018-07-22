@@ -3,9 +3,6 @@ import numpy as np
 
 class Quaternion:
 
-    def __class__():
-        return "quaternion"    
-
     # Constructs the quaternion q = [w,x,y,z] where
     # w is the scalar and x,y,z form the vector.
     def __init__(self, *args):
@@ -114,20 +111,55 @@ class Quaternion:
                 phi = np.arctan2(self._x+self._z,self._w+self._y)
         return phi,theta,psi
 
+    # Sets the quaternion to another quaternion
+    def equal(self,q):
+        self._w, self._x, self._y, self._z = q._w, q._x, q._y, q._z
+
+    # Returns a copy of itself
+    def copy(self):
+        q = Quaternion()
+        q.equal(self)
+        return q
+
+    # Returns the identity group element of the quaternion
+    @staticmethod
+    def identity():
+        return Quaternion(1,0,0,0)
+
+
+    # Overrides the addition operation
+    def __add__(self,other):
+        if other.__class__.__name__ == self.__class__.__name__:
+            q = Quaternion(self._w+other._w, self._x+other._x, self._y+other._y, self._z+other._z)
+        else:
+            print("Only can do addition with type: "+self.__class__.__name__)
+            q = Quaternion()
+        return q
+
+    def __div__(self,other):
+        if np.isscalar(other):
+            return self.scalar_mult(self,1.0/other)
+        else:
+            print("Only can do division with scalar")
+
+
+
+
     # Overrides the multiplication operation
     def __mul__(self,other):
         if other.__class__.__name__ == self.__class__.__name__:
             return self.quaternion_mult(self, other)
         elif isinstance(other,np.ndarray):
             return self.vector_rot(self,other)
+        elif np.isscalar(other):
+            return self.scalar_mult(self,other)
         else:
-            print("Multiplication with type"+ type(other).__name__ +" not implemented.")
+            print("Multiplication with type: "+ type(other).__name__ +" not implemented.")
         
 
-    # Returns the identity group element of the quaternion
     @staticmethod
-    def identity():
-        return Quaternion(1,0,0,0)
+    def scalar_mult(q,s):
+        return Quaternion(q._w*s,q._x*s,q._y*s,q._z*s)
 
     # Multiplies two quaternions together q1*q2
     @staticmethod
@@ -188,6 +220,26 @@ class Quaternion:
             delta = np.sign(self._w)*self.n()
         return delta
 
+    # Normalize the quaternion so that
+    # sqrt(w**2 + )
+    def normalize(self):
+        n = np.array([self._w, self._x, self._y, self._z])
+        n = n/np.linalg.norm(n)
+        self._w, self._x, self._y, self._z = n[0],n[1],n[2],n[3]
+
+    def get_derivative(self,w,Ts):
+
+        mat = np.matrix([[ self._w, -self._z,  self._y],
+                         [ self._z,  self._w, -self._x],
+                         [-self._y,  self._x,  self._w],
+                         [-self._x, -self._y, -self._z]])
+
+        n = 0.5*mat*w*Ts
+        # print(mat)
+        # print(w)
+        # print(n)
+        return Quaternion(np.float(n[3]),np.float(n[0]),np.float(n[1]),np.float(n[2]))
+
 #-------------------------------------------------------------------
 #                Used for Debugging
 #------------------------------------------------------------------
@@ -200,3 +252,34 @@ class Quaternion:
     # Prints Quaternion elements
     def p(self):
         print(str(self._w),"("+str(self._x)+","+str(self._y)+","+str(self._z)+")")
+
+
+
+
+################################################################
+#               Quaernion Visualize class
+#################################################################
+
+
+
+# class Quaternion_Visualize():
+
+#     def init_vizualize(self):
+
+#         # Create the figure
+#         self.fig = plt.figure(figzie=(7,7))
+#         self.ax = self.fig.add_subplot(111,projection='3d')
+
+#         # Create the manifold
+
+#         # Make data
+#         u = np.linspace(0, 2 * np.pi, 100)
+#         v = np.linspace(0, np.pi, 100)
+#         x = 10 * np.outer(np.cos(u), np.sin(v))
+#         y = 10 * np.outer(np.sin(u), np.sin(v))
+#         z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
+
+#         # Plot the surface
+#         ax.plot_surface(x, y, z, color='b')
+
+#         plt.show()
