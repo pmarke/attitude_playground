@@ -131,7 +131,7 @@ class Quaternion(Quaternion):
                 # Store trajectory
         trajectory = [Quaternion()]
 
-        f = lambda i,t,q: q.get_derivative(w[:,i].reshape(3,1),1)
+        f = lambda i,t,q: q.get_derivative(c,1)
 
         # Perform Euler integration for every gyro sample
         for i in range(w.shape[1]):
@@ -151,6 +151,40 @@ class Quaternion(Quaternion):
 
         return trajectory
 
+# # Create Quaternion and visualization objects
+# n = np.array([[1],[0],[0]])
+# n = n/np.linalg.norm(n)
+# viz = Visualize(n)
+# q = Quaternion()
+
+# # Generate gyro samples and create trajectory
+# samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
+# trajectory = q.rk4_integration(samples['w'],samples['Ts'])
+
+# viz.draw(trajectory)
+# plt.show()
+
+#############################################################
+#                 Integrating on the Manifold
+#############################################################
+
+class Quaternion(Quaternion):
+
+    def lie_integration(self,w,Ts):
+
+        # Store trajectory
+        trajectory = [Quaternion()]
+
+        # Perform Euler integration for every gyro sample
+        for i in range(w.shape[1]):
+
+            q_dt = Quaternion.from_algebra(w[:,i].reshape(3,1)*Ts)
+            self.equal(q_dt*self)
+       
+            trajectory.append(self.copy())
+
+        return trajectory
+
 # Create Quaternion and visualization objects
 n = np.array([[1],[0],[0]])
 n = n/np.linalg.norm(n)
@@ -158,12 +192,8 @@ viz = Visualize(n)
 q = Quaternion()
 
 # Generate gyro samples and create trajectory
-samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
-trajectory = q.rk4_integration(samples['w'],samples['Ts'])
+samples = generate_gyro_samples(w0=np.array([[50],[0],[-50]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
+trajectory = q.lie_integration(samples['w'],samples['Ts'])
 
 viz.draw(trajectory)
 plt.show()
-
-#############################################################
-#                     Lie Algebra
-#############################################################
