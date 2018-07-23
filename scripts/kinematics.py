@@ -8,7 +8,7 @@ from quaternions import Quaternion
 #             Generate Gyro Samples
 #############################################################
 
-def generate_gyro_samples(w0=np.array([[50],[30],[20]]), Ts=0.01, secs=5, alpha=0.1, sigma=0.25):
+def generate_gyro_samples(w0=np.array([[50],[30],[20]]), Ts=0.01, secs=5, alpha=0.5, sigma=0.25):
     
     # Number of samples
     N = np.int(secs/Ts)
@@ -22,7 +22,7 @@ def generate_gyro_samples(w0=np.array([[50],[30],[20]]), Ts=0.01, secs=5, alpha=
     # Make some noise!
     eta = sigma*np.random.randn(N)
 
-    d = {'w':w+eta*0, 'Ts':Ts, 'secs':secs, 'alpha':alpha, 'sigma':sigma}
+    d = {'w':w+eta, 'Ts':Ts, 'secs':secs, 'alpha':alpha, 'sigma':sigma}
 
     return d
 
@@ -40,13 +40,17 @@ def generate_gyro_samples(w0=np.array([[50],[30],[20]]), Ts=0.01, secs=5, alpha=
 
 class Visualize:
 
-    def __init__(self,v):
+    def __init__(self,v=np.array([[1],[0],[0]]) ):
+
+        # Normalize the input vector to make sure its unit lenght
+        v = v/np.linalg.norm(v)
 
         self.v = v
 
         # Create the figure
         self.fig = plt.figure(figsize=(7,7))
         self.ax = self.fig.add_subplot(111,projection='3d')
+        self.ax.grid("on")
 
         # Create the manifold
         u = np.linspace(0, 2 * np.pi, 100)
@@ -56,10 +60,12 @@ class Visualize:
         z = np.outer(np.ones(np.size(u)), np.cos(v))
 
         # Plot the manifold
-        self.ax.plot_surface(x, y, z, color='b', alpha = 0.2)
+        self.ax.plot_wireframe(x, y, z, color='k', alpha=0.2, rstride=4, cstride=4)
         self.ax.set_xlabel("X-axis")
         self.ax.set_ylabel("Y-axis")
         self.ax.set_zlabel("Z-axis")
+
+        plt.axis('equal')
         plt.title("Attitude of object")
 
     # Rotates the vector by every quaternion in the list trajectory
@@ -68,18 +74,15 @@ class Visualize:
     def draw(self,trajectory=[Quaternion()]):
 
         for i in range(len(trajectory)):
-            trajectory[i].p()
             v = trajectory[i]*self.v
-
-            # print(v)
             self.ax.scatter(v[0,0],v[1,0],v[2,0],s=50,c='r', edgecolors='none')
 
+        plt.show()
 
-# n = np.array([[1],[3],[4]])
-# n = n/np.linalg.norm(n)
-# viz = Visualize(n)
+
+
+# viz = Visualize()
 # viz.draw()
-# plt.show()
 
 
 #############################################################
@@ -106,17 +109,17 @@ class Quaternion(Quaternion):
         return trajectory
 
 
-# # Create Quaternion and visualization objects
-# n = np.array([[1],[0],[0]])
-# n = n/np.linalg.norm(n)
-# viz = Visualize(n)
-# q = Quaternion()
+# Create Quaternion and visualization objects
+n = np.array([[1],[0],[0]])
+n = n/np.linalg.norm(n)
+viz = Visualize(n)
+q = Quaternion()
 
-# # Generate gyro samples and create trajectory
-# samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=0.1, alpha=0.1, sigma=0.25)
-# trajectory = q.euler_integration(samples['w'],samples['Ts'])
+# Generate gyro samples and create trajectory
+samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=0.1, alpha=0.1, sigma=0.25)
+trajectory = q.euler_integration(samples['w'],samples['Ts'])
 
-# viz.draw(trajectory)
+viz.draw(trajectory)
 # plt.show()
 
 
@@ -151,7 +154,7 @@ class Quaternion(Quaternion):
 
         return trajectory
 
-# # Create Quaternion and visualization objects
+# Create Quaternion and visualization objects
 # n = np.array([[1],[0],[0]])
 # n = n/np.linalg.norm(n)
 # viz = Visualize(n)
@@ -185,15 +188,15 @@ class Quaternion(Quaternion):
 
         return trajectory
 
-# Create Quaternion and visualization objects
-n = np.array([[1],[0],[0]])
-n = n/np.linalg.norm(n)
-viz = Visualize(n)
-q = Quaternion()
+# # Create Quaternion and visualization objects
+# n = np.array([[1],[0],[0]])
+# n = n/np.linalg.norm(n)
+# viz = Visualize(n)
+# q = Quaternion()
 
-# Generate gyro samples and create trajectory
-samples = generate_gyro_samples(w0=np.array([[50],[0],[-50]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
-trajectory = q.lie_integration(samples['w'],samples['Ts'])
+# # Generate gyro samples and create trajectory
+# samples = generate_gyro_samples(w0=np.array([[50],[0],[-50]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
+# trajectory = q.lie_integration(samples['w'],samples['Ts'])
 
-viz.draw(trajectory)
-plt.show()
+# viz.draw(trajectory)
+# plt.show()

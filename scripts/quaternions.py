@@ -30,7 +30,9 @@ class Quaternion:
         self._w = w     
         self._x = x     
         self._y = y     
-        self._z = z   
+        self._z = z  
+
+
 
     # Converts the rotation matrix to quaternion. 
     def r_to_q(self, R = np.identity(3)):
@@ -38,6 +40,8 @@ class Quaternion:
         self._x = 0.5*np.sqrt(1+R[0,0]-R[1,1]-R[2,2])
         self._y = 0.5*np.sqrt(1-R[0,0]+R[1,1]-R[2,2])
         self._z = 0.5*np.sqrt(1-R[0,0]-R[1,1]+R[2,2])
+
+
 
     # Converts quaternion to rotation matrix
     def q_to_r(self):
@@ -54,13 +58,13 @@ class Quaternion:
         r32 = 2*(self._y*self._z - self._w*self._x)
         r33 = self._w**2-self._x**2-self._y**2+self._z**2
 
-        # print(r31,r32,r33)
-
         R = np.matrix([[r11,r12,r13], \
                       [r21,r22,r23], \
                       [r31,r32,r33]])
 
         return R
+
+
 
     # Converts angle axis to quaternion.
     # - theta is the angle of rotation in radians
@@ -70,6 +74,8 @@ class Quaternion:
         self._x = np.sin(theta/2)*n[0]
         self._y = np.sin(theta/2)*n[1]
         self._z = np.sin(theta/2)*n[2]
+
+
 
     # Converts quaternion to angle axis
     def q_to_aa(self):
@@ -89,6 +95,7 @@ class Quaternion:
         return theta, np.array([n1,n2,n3])
 
 
+
     # Converts 321 sequence of euler angles to quaternion
     def euler_to_q(self, phi=0, theta=0, psi=0):
         c_psi,c_th,c_phi,s_psi,s_th,s_phi = np.cos(psi/2),np.cos(theta/2),np.cos(phi/2),np.sin(psi/2),np.sin(theta/2),np.sin(phi/2)
@@ -96,6 +103,8 @@ class Quaternion:
         self._x = c_psi*c_th*s_phi - s_psi*s_th*c_phi
         self._y = c_psi*s_th*c_phi + s_psi*c_th*s_phi
         self._z = s_psi*c_th*c_phi - c_psi*s_th*s_phi
+
+
 
     # Returns the 321 sequence of euler angels
     def q_to_euler(self):
@@ -111,9 +120,13 @@ class Quaternion:
                 phi = np.arctan2(self._x+self._z,self._w+self._y)
         return phi,theta,psi
 
+
+
     # Sets the quaternion to another quaternion
     def equal(self,q):
         self._w, self._x, self._y, self._z = q._w, q._x, q._y, q._z
+
+
 
     # Returns a copy of itself
     def copy(self):
@@ -121,10 +134,13 @@ class Quaternion:
         q.equal(self)
         return q
 
+
+
     # Returns the identity group element of the quaternion
     @staticmethod
     def identity():
         return Quaternion(1,0,0,0)
+
 
 
     # Overrides the addition operation
@@ -136,12 +152,14 @@ class Quaternion:
             q = Quaternion()
         return q
 
+
+
+    # Implements quaternion division by a scalar
     def __div__(self,other):
         if np.isscalar(other):
             return self.scalar_mult(self,1.0/other)
         else:
             print("Only can do division with scalar")
-
 
 
 
@@ -155,11 +173,16 @@ class Quaternion:
             return self.scalar_mult(self,other)
         else:
             print("Multiplication with type: "+ type(other).__name__ +" not implemented.")
+
+
         
 
+    # Implements quaternion multiplication by a scalar
     @staticmethod
     def scalar_mult(q,s):
         return Quaternion(q._w*s,q._x*s,q._y*s,q._z*s)
+
+
 
     # Multiplies two quaternions together q1*q2
     @staticmethod
@@ -170,12 +193,16 @@ class Quaternion:
         n_dprime = n_prime*n
         return Quaternion(n_dprime[3,0],n_dprime[0,0],n_dprime[1,0],n_dprime[2,0])
 
+
+
     # Rotates a vector by the quaternion
     @staticmethod
     def vector_rot(q,v):
         V = Quaternion(0,v[0,0],v[1,0],v[2,0]) # convert vector to quaternion
         V_prime = q*V*q.inv()
         return np.array([[V_prime._x],[V_prime._y],[V_prime._z]])
+
+
 
     # Converts the quaternion into matrix representation
     def mat(self):
@@ -184,13 +211,19 @@ class Quaternion:
                           [ self._y, -self._x,  self._w, self._z],
                           [-self._x, -self._y, -self._z, self._w]])
 
+
+
     # Returns the inverse of the quaternion
     def inv(self):
         return Quaternion(self._w, -self._x, -self._y, -self._z)
 
+
+
     # Returns the vector component of the quaternion
     def n(self):
         return np.array([[self._x],[self._y],[self._z]])
+
+
 
     # Transformation from algebra to group
     # - delta: 3d vector representing the axis-angle rotation
@@ -208,6 +241,7 @@ class Quaternion:
         return Quaternion(w,n[0,0],n[1,0],n[2,0])
 
 
+
     # Transformation from group to algebra
     # - delta: 3d vector representing the axis-angle rotation
     #   ex: delta = np.array([[wx],[wy],[wz]])
@@ -220,25 +254,27 @@ class Quaternion:
             delta = np.sign(self._w)*self.n()
         return delta
 
+        
+
     # Normalize the quaternion so that
-    # sqrt(w**2 + )
+    # sqrt(w**2 + x**2 + y**2 + z**2) = 1
     def normalize(self):
         n = np.array([self._w, self._x, self._y, self._z])
         n = n/np.linalg.norm(n)
         self._w, self._x, self._y, self._z = n[0],n[1],n[2],n[3]
 
-    def get_derivative(self,w,Ts):
+    # def get_derivative(self,w,Ts):
 
-        mat = np.matrix([[ self._w, -self._z,  self._y],
-                         [ self._z,  self._w, -self._x],
-                         [-self._y,  self._x,  self._w],
-                         [-self._x, -self._y, -self._z]])
+    #     mat = np.matrix([[ self._w, -self._z,  self._y],
+    #                      [ self._z,  self._w, -self._x],
+    #                      [-self._y,  self._x,  self._w],
+    #                      [-self._x, -self._y, -self._z]])
 
-        n = 0.5*mat*w*Ts
-        # print(mat)
-        # print(w)
-        # print(n)
-        return Quaternion(np.float(n[3]),np.float(n[0]),np.float(n[1]),np.float(n[2]))
+    #     n = 0.5*mat*w*Ts
+    #     # print(mat)
+    #     # print(w)
+    #     # print(n)
+    #     return Quaternion(np.float(n[3]),np.float(n[0]),np.float(n[1]),np.float(n[2]))
 
 #-------------------------------------------------------------------
 #                Used for Debugging
@@ -254,32 +290,22 @@ class Quaternion:
         print(str(self._w),"("+str(self._x)+","+str(self._y)+","+str(self._z)+")")
 
 
+#-------------------------------------------------------------------
+#              Add derivative method
+#------------------------------------------------------------------
 
+class Quaternion(Quaternion):
 
-################################################################
-#               Quaernion Visualize class
-#################################################################
+    # Returns the derivative of the quaternion
+    def get_derivative(self,w,Ts):
 
+        mat = np.matrix([[ self._w, -self._z,  self._y],
+                         [ self._z,  self._w, -self._x],
+                         [-self._y,  self._x,  self._w],
+                         [-self._x, -self._y, -self._z]])
 
-
-# class Quaternion_Visualize():
-
-#     def init_vizualize(self):
-
-#         # Create the figure
-#         self.fig = plt.figure(figzie=(7,7))
-#         self.ax = self.fig.add_subplot(111,projection='3d')
-
-#         # Create the manifold
-
-#         # Make data
-#         u = np.linspace(0, 2 * np.pi, 100)
-#         v = np.linspace(0, np.pi, 100)
-#         x = 10 * np.outer(np.cos(u), np.sin(v))
-#         y = 10 * np.outer(np.sin(u), np.sin(v))
-#         z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
-
-#         # Plot the surface
-#         ax.plot_surface(x, y, z, color='b')
-
-#         plt.show()
+        n = 0.5*mat*w*Ts
+        # print(mat)
+        # print(w)
+        # print(n)
+        return Quaternion(np.float(n[3]),np.float(n[0]),np.float(n[1]),np.float(n[2]))
