@@ -131,7 +131,7 @@ class Quaternion(Quaternion):
                 # Store trajectory
         trajectory = [Quaternion()]
 
-        f = lambda i,t,q: q.get_derivative(c,1)
+        f = lambda i,t,q: q.get_derivative(w[:,i].reshape(3,1),1)
 
         # Perform Euler integration for every gyro sample
         for i in range(w.shape[1]):
