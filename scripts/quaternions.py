@@ -263,6 +263,11 @@ class Quaternion:
         n = n/np.linalg.norm(n)
         self._w, self._x, self._y, self._z = n[0],n[1],n[2],n[3]
 
+    # return the magnitude or the quaternion
+    def magnitude(self):
+        n = np.array([self._w, self._x, self._y, self._z])
+        return np.linalg.norm(n)
+
     # def get_derivative(self,w,Ts):
 
     #     mat = np.matrix([[ self._w, -self._z,  self._y],

@@ -74,8 +74,10 @@ class Visualize:
     def draw(self,trajectory=[Quaternion()]):
 
         for i in range(len(trajectory)):
-            v = trajectory[i]*self.v
-            self.ax.scatter(v[0,0],v[1,0],v[2,0],s=50,c='r', edgecolors='none')
+
+            if trajectory[i].magnitude() < 2:
+                v = trajectory[i]*self.v
+                self.ax.scatter(v[0,0],v[1,0],v[2,0],s=50,c='r', edgecolors='none')
 
         plt.show()
 
@@ -116,11 +118,11 @@ viz = Visualize(n)
 q = Quaternion()
 
 # Generate gyro samples and create trajectory
-samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=0.1, alpha=0.1, sigma=0.25)
+samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=5, alpha=0.1, sigma=0.25)
 trajectory = q.euler_integration(samples['w'],samples['Ts'])
+print("|q| final: ", trajectory[-1].magnitude())
 
 viz.draw(trajectory)
-# plt.show()
 
 
 
@@ -163,9 +165,9 @@ class Quaternion(Quaternion):
 # # Generate gyro samples and create trajectory
 # samples = generate_gyro_samples(w0=np.array([[50],[50],[0]]), Ts=0.01, secs=1, alpha=0.1, sigma=0.25)
 # trajectory = q.rk4_integration(samples['w'],samples['Ts'])
+# print("|q| final: ", trajectory[-1].magnitude())
 
 # viz.draw(trajectory)
-# plt.show()
 
 #############################################################
 #                 Integrating on the Manifold
